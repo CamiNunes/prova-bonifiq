@@ -16,10 +16,43 @@ namespace ProvaPub.Controllers
 	[Route("[controller]")]
 	public class Parte3Controller :  ControllerBase
 	{
-		[HttpGet("orders")]
-		public async Task<Order> PlaceOrder(string paymentMethod, decimal paymentValue, int customerId)
-		{
-			return await new OrderService().PayOrder(paymentMethod, paymentValue, customerId);
-		}
-	}
+        //[HttpGet("orders")]
+        //public async Task<bool> PlaceOrder(string paymentMethod, decimal paymentValue, int customerId)
+        //{
+        //	return await new OrderService().PayOrder(paymentMethod, paymentValue, customerId);
+        //}
+
+        private readonly PaymentProcessorFactory _paymentProcessorFactory;
+
+        public Parte3Controller(PaymentProcessorFactory paymentProcessorFactory)
+        {
+            _paymentProcessorFactory = paymentProcessorFactory;
+        }
+
+        [HttpGet("orders")]
+        public async Task<IActionResult> PayOrder(string paymentMethod, decimal paymentValue, int customerId)
+        {
+            // Use a fábrica para obter o processador de pagamento correto com base no método de pagamento
+            var paymentProcessor = _paymentProcessorFactory.CreatePaymentProcessor(paymentMethod);
+
+            if (paymentProcessor == null)
+            {
+                return BadRequest("Método de pagamento não suportado.");
+            }
+
+            var paymentResult = await paymentProcessor.PayOrder(paymentValue, customerId);
+
+            if (paymentResult)
+            {
+                return Ok(new Order
+                {
+                    Value = paymentValue
+                });
+            }
+            else
+            {
+                return BadRequest("Falha no pagamento.");
+            }
+        }
+    }
 }
