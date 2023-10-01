@@ -14,6 +14,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<RandomService>();
 builder.Services.AddTransient<PaymentProcessorFactory>();
 
+builder.Services.AddScoped<TestDbContext>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CustomerService>();
+
 builder.Services.AddDbContext<TestDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("ctx")));
 var app = builder.Build();
